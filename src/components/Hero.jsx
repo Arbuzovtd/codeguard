@@ -1,4 +1,6 @@
 import { motion } from 'framer-motion'
+import { useState } from 'react'
+import { supabase } from '../lib/supabase'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -21,12 +23,45 @@ const itemVariants = {
 }
 
 function Hero() {
-  const handleSubmit = (event) => {
+  const [loading, setLoading] = useState(false)
+  const [message, setMessage] = useState('')
+
+  const handleSubmit = async (event) => {
     event.preventDefault()
+    setLoading(true)
+    setMessage('')
+
     const email = event.target.email.value
-    // MVP feedback until waitlist backend is wired up.
-    alert(`Thanks! We'll notify you at ${email} when CodeGuard launches.`)
-    event.target.reset()
+
+    try {
+      const { error } = await supabase.from('signups').insert([
+        {
+          email,
+          source: 'hero',
+          user_agent: navigator.userAgent,
+        },
+      ])
+
+      if (error) {
+        if (error.code === '23505') {
+          setMessage('You are already on the waitlist.')
+        } else {
+          throw error
+        }
+      } else {
+        setMessage("Thanks! We'll notify you when CodeGuard launches.")
+        event.target.reset()
+
+        if (window.plausible) {
+          window.plausible('Email Submit', { props: { section: 'hero' } })
+        }
+      }
+    } catch (err) {
+      console.error('Error saving email:', err)
+      setMessage('Something went wrong. Please try again.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -60,16 +95,23 @@ function Hero() {
               placeholder="your@email.com"
               required
               aria-label="Email address"
+              disabled={loading}
             />
             <motion.button
               className="btn-primary"
               type="submit"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
+              disabled={loading}
             >
-              Get Early Access
+              {loading ? 'Submitting...' : 'Get Early Access'}
             </motion.button>
           </motion.form>
+          {message && (
+            <p className={`mt-4 text-sm ${message.includes('wrong') ? 'text-danger' : 'text-primary'}`}>
+              {message}
+            </p>
+          )}
           <motion.p className="mt-4 text-sm text-primary/80 font-medium" variants={itemVariants}>
             Join 200+ developers protecting their code
           </motion.p>

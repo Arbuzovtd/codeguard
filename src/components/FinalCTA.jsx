@@ -1,4 +1,6 @@
 import { motion } from 'framer-motion'
+import { useState } from 'react'
+import { supabase } from '../lib/supabase'
 
 const fadeIn = {
   hidden: { opacity: 0, y: 20 },
@@ -10,11 +12,45 @@ const fadeIn = {
 }
 
 function FinalCTA() {
-  const handleSubmit = (event) => {
+  const [loading, setLoading] = useState(false)
+  const [message, setMessage] = useState('')
+
+  const handleSubmit = async (event) => {
     event.preventDefault()
+    setLoading(true)
+    setMessage('')
+
     const email = event.target.email.value
-    alert(`Thanks! We'll notify you at ${email} when CodeGuard launches.`)
-    event.target.reset()
+
+    try {
+      const { error } = await supabase.from('signups').insert([
+        {
+          email,
+          source: 'footer',
+          user_agent: navigator.userAgent,
+        },
+      ])
+
+      if (error) {
+        if (error.code === '23505') {
+          setMessage('You are already on the waitlist.')
+        } else {
+          throw error
+        }
+      } else {
+        setMessage("Thanks! We'll notify you when CodeGuard launches.")
+        event.target.reset()
+
+        if (window.plausible) {
+          window.plausible('Email Submit', { props: { section: 'footer' } })
+        }
+      }
+    } catch (err) {
+      console.error('Error saving email:', err)
+      setMessage('Something went wrong. Please try again.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -45,15 +81,22 @@ function FinalCTA() {
             placeholder="your@email.com"
             required
             aria-label="Email address"
+            disabled={loading}
           />
           <motion.button
             className="btn-primary"
             type="submit"
             whileHover={{ scale: 1.02 }}
+            disabled={loading}
           >
-            Get Early Access
+            {loading ? 'Submitting...' : 'Get Early Access'}
           </motion.button>
         </form>
+        {message && (
+          <p className={`mt-4 text-sm ${message.includes('wrong') ? 'text-danger' : 'text-primary'}`}>
+            {message}
+          </p>
+        )}
       </div>
     </motion.section>
   )
