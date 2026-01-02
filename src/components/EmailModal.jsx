@@ -77,7 +77,7 @@ function EmailModal({ isOpen, onClose, plan }) {
 
         setTimeout(() => {
           onClose()
-        }, 800)
+        }, 4000)
       }
     } catch (err) {
       console.error('Error saving email:', err)

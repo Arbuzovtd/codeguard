@@ -51,7 +51,7 @@ function Header() {
             <a className="link-primary font-medium" href="#pricing">
               Pricing
             </a>
-            <a className="link-primary font-medium" href="#">
+            <a className="link-primary font-medium" href="/docs.html">
               Docs
             </a>
           </nav>

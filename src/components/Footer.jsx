@@ -28,7 +28,7 @@ function Footer() {
             <a className="hover:text-white/80 transition-colors duration-200" href="#pricing">
               Pricing
             </a>
-            <a className="hover:text-white/80 transition-colors duration-200" href="#">
+            <a className="hover:text-white/80 transition-colors duration-200" href="/docs.html">
               Docs
             </a>
             <a className="hover:text-white/80 transition-colors duration-200" href="#">
