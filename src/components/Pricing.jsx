@@ -19,7 +19,13 @@ const cardVariants = {
   },
 }
 
-function Pricing() {
+function Pricing({ onSelectPlan }) {
+  const handleSelect = (plan) => {
+    if (onSelectPlan) {
+      onSelectPlan(plan)
+    }
+  }
+
   return (
     <motion.section
       className="section-container"
@@ -61,6 +67,7 @@ function Pricing() {
             className="btn-secondary mt-8 w-full"
             type="button"
             whileHover={{ scale: 1.02 }}
+            onClick={() => handleSelect('individual')}
           >
             Start for Free
           </motion.button>
@@ -92,6 +99,7 @@ function Pricing() {
             className="btn-primary mt-8 w-full"
             type="button"
             whileHover={{ scale: 1.02 }}
+            onClick={() => handleSelect('pro')}
           >
             Get Pro Access
           </motion.button>
